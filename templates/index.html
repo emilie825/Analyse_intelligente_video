@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Analyseur de Vidéo IA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Css/style.css') }}">
+    <script src="{{ url_for('static', filename='JavaScript/script.js') }}" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Analyseur Vidéo avec Résumé Intelligent</h1>
+
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <label for="videoFile" class="upload-label">Sélectionnez une vidéo</label>
+            <input type="file" name="videoFile" id="videoFile" required>
+            <button type="submit">Soumettre</button>
+        </form>
+
+        {% if filename %}
+        <div class="preview">
+            <h2>📽️ Vidéo :</h2>
+            <video controls width="100%">
+                <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="video/mp4">
+                Votre navigateur ne prend pas en charge la lecture de vidéos.
+            </video>
+        </div>
+
+        <div class="summary">
+            <h2>📝 Résumé généré :</h2>
+            <p>{{ summary }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
