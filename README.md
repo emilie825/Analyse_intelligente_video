@@ -21,12 +21,13 @@ Une application web élégante permettant aux utilisateurs de soumettre une vid�
 
 Ce projet a été conçu et développé par :
 
-- **EKASSI Emilienne** – Data engineer
+- **Emilienne EKASSI** 
 - **Collaborateurs éventuels** 
 - **Yann Cédric LAVRY**
 - **Djibril DIOP**
 - **Oscar HEUMOU**
 - **Cherif MOUNCHILI**
+- **Sandrine Nokam**
 
 
 
