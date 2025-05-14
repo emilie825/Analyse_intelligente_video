@@ -1,35 +1,657 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Analyseur de Vidéo IA</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='Css/style.css') }}">
-    <script src="{{ url_for('static', filename='JavaScript/script.js') }}" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traitement Audio-Vidéo Premium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #3f37c9;
+      --accent: #4895ef;
+      --dark: #1b263b;
+      --light: #f8f9fa;
+      --success: #4cc9f0;
+      --warning: #f72585;
+      --gray: #adb5bd;
+      --gray-light: #e9ecef;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      transform: rotate(30deg);
+      pointer-events: none;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      position: relative;
+      display: inline-block;
+    }
+    
+    h1::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 3px;
+      background-color: var(--accent);
+      border-radius: 3px;
+    }
+    
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-top: 4px solid var(--accent);
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .card h2 i {
+      color: var(--accent);
+    }
+    
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .file-input-wrapper input[type="file"] {
+      font-size: 100px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .file-input-label {
+      border: 2px dashed var(--gray);
+      border-radius: 8px;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.3s ease;
+      background-color: var(--gray-light);
+      cursor: pointer;
+    }
+    
+    .file-input-label:hover {
+      border-color: var(--accent);
+      background-color: rgba(72, 149, 239, 0.05);
+    }
+    
+    .file-input-label i {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .file-input-label span {
+      font-size: 0.9rem;
+      color: var(--dark);
+    }
+    
+    .file-input-label small {
+      font-size: 0.8rem;
+      color: var(--gray);
+      margin-top: 0.5rem;
+    }
+    
+    .file-selected {
+      display: none;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--primary);
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid var(--gray-light);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      resize: vertical;
+      min-height: 150px;
+      transition: border-color 0.3s ease;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+    }
+    
+    .btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn:hover {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    .btn i {
+      font-size: 1rem;
+    }
+    
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+      margin-top: 1rem;
+    }
+    
+    .result-card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .result-card h2 i {
+      color: var(--accent);
+    }
+    
+    .result-content {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.2rem;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      border-left: 4px solid var(--accent);
+    }
+    
+    .loader-container {
+      display: none;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    
+    .loader-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    .progress-container {
+      height: 8px;
+      background-color: var(--gray-light);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--success) 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+    
+    .progress-text {
+      font-size: 0.8rem;
+      color: var(--gray);
+    }
+    
+    .status-message {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--primary);
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .card-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Animation for file upload */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .pulse {
+      animation: pulse 1.5s infinite;
+    }
+    
+    /* Floating animation for header */
+    @keyframes floating {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .floating {
+      animation: floating 3s ease-in-out infinite;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎬 Analyseur Vidéo avec Résumé Intelligent</h1>
-
-        <form action="/upload" method="POST" enctype="multipart/form-data">
-            <label for="videoFile" class="upload-label">Sélectionnez une vidéo</label>
-            <input type="file" name="videoFile" id="videoFile" required>
-            <button type="submit">Soumettre</button>
-        </form>
-
-        {% if filename %}
-        <div class="preview">
-            <h2>📽️ Vidéo :</h2>
-            <video controls width="100%">
-                <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="video/mp4">
-                Votre navigateur ne prend pas en charge la lecture de vidéos.
-            </video>
-        </div>
-
-        <div class="summary">
-            <h2>📝 Résumé généré :</h2>
-            <p>{{ summary }}</p>
-        </div>
-        {% endif %}
+  <header>
+    <div class="floating">
+      <h1><i class="fas fa-brain"></i> Traitement Audio/Vidéo Intelligent</h1>
+      <p>Transformez vos médias en insights exploitables avec notre technologie avancée</p>
     </div>
+  </header>
+
+  <main>
+    <div class="card-container">
+      <!-- 1. Extraction audio -->
+      <div class="card">
+        <h2><i class="fas fa-film"></i> Traitement vidéo</h2>
+        <form id="extractForm" action="/extract" method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <div class="file-input-wrapper">
+              <label class="file-input-label" id="videoLabel">
+                <i class="fas fa-video"></i>
+                <span>Glissez-déposez votre fichier vidéo</span>
+                <small>ou cliquez pour parcourir (MP4 uniquement)</small>
+              </label>
+              <input type="file" name="file" accept=".mp4" required>
+              <div class="file-selected" id="videoFileSelected"></div>
+            </div>
+          </div>
+          <button type="submit" class="btn" id="extractBtn">
+            <i class="fas fa-cogs"></i> Exécuter
+          </button>
+          <div class="loader-container" id="extractLoader">
+            <span class="loader-label"><i class="fas fa-spinner fa-spin"></i> Traitement en cours...</span>
+            <div class="progress-container">
+              <div class="progress-bar" id="extractProgress"></div>
+            </div>
+            <div class="progress-text" id="extractProgressText">0% complété</div>
+            <div class="status-message" id="extractStatus"></div>
+          </div>
+        </form>
+      </div>
+
+      <!-- 2. Transcription -->
+      <div class="card">
+        <h2><i class="fas fa-microphone"></i> Traitement audio</h2>
+        <form id="transcribeForm" action="/transcribe" method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <div class="file-input-wrapper">
+              <label class="file-input-label" id="audioLabel">
+                <i class="fas fa-music"></i>
+                <span>Glissez-déposez votre fichier audio</span>
+                <small>ou cliquez pour parcourir (WAV uniquement)</small>
+              </label>
+              <input type="file" name="file" accept=".wav" required>
+              <div class="file-selected" id="audioFileSelected"></div>
+            </div>
+          </div>
+          <button type="submit" class="btn" id="transcribeBtn">
+            <i class="fas fa-cogs"></i> Exécuter
+          </button>
+          <div class="loader-container" id="transcribeLoader">
+            <span class="loader-label"><i class="fas fa-spinner fa-spin"></i> Analyse en cours...</span>
+            <div class="progress-container">
+              <div class="progress-bar" id="transcribeProgress"></div>
+            </div>
+            <div class="progress-text" id="transcribeProgressText">0% complété</div>
+            <div class="status-message" id="transcribeStatus"></div>
+          </div>
+        </form>
+      </div>
+
+      <!-- 3. Résumé -->
+      <div class="card">
+        <h2><i class="fas fa-file-alt"></i> Traitement texte</h2>
+        <form id="summaryForm" action="/summarize" method="post">
+          <div class="form-group">
+            <textarea id="summaryText" name="text" placeholder="Collez ici le texte à analyser..."></textarea>
+          </div>
+          <button type="submit" class="btn" id="summaryBtn">
+            <i class="fas fa-cogs"></i> Exécuter
+          </button>
+          <div class="loader-container" id="summaryLoader">
+            <span class="loader-label"><i class="fas fa-spinner fa-spin"></i> Génération du résumé...</span>
+            <div class="progress-container">
+              <div class="progress-bar" id="summaryProgress"></div>
+            </div>
+            <div class="progress-text" id="summaryProgressText">0% complété</div>
+            <div class="status-message" id="summaryStatus"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Résultat -->
+    <div class="result-card">
+      <h2><i class="fas fa-poll"></i> Résultats de l'analyse</h2>
+      <div class="result-content" id="resultOutput">
+        Les résultats de vos traitements apparaîtront ici...
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Gestion de l'affichage des fichiers sélectionnés
+    document.querySelector('#extractForm input[type="file"]').addEventListener('change', function(e) {
+      const fileName = e.target.files[0]?.name || 'Aucun fichier sélectionné';
+      document.getElementById('videoFileSelected').textContent = `Fichier sélectionné: ${fileName}`;
+      document.getElementById('videoFileSelected').style.display = 'block';
+      document.getElementById('videoLabel').classList.add('pulse');
+    });
+    
+    document.querySelector('#transcribeForm input[type="file"]').addEventListener('change', function(e) {
+      const fileName = e.target.files[0]?.name || 'Aucun fichier sélectionné';
+      document.getElementById('audioFileSelected').textContent = `Fichier sélectionné: ${fileName}`;
+      document.getElementById('audioFileSelected').style.display = 'block';
+      document.getElementById('audioLabel').classList.add('pulse');
+    });
+
+    // Animation au survol des labels
+    document.getElementById('videoLabel').addEventListener('mouseenter', function() {
+      this.classList.add('pulse');
+    });
+    
+    document.getElementById('videoLabel').addEventListener('mouseleave', function() {
+      if (!document.querySelector('#extractForm input[type="file"]').files.length) {
+        this.classList.remove('pulse');
+      }
+    });
+    
+    document.getElementById('audioLabel').addEventListener('mouseenter', function() {
+      this.classList.add('pulse');
+    });
+    
+    document.getElementById('audioLabel').addEventListener('mouseleave', function() {
+      if (!document.querySelector('#transcribeForm input[type="file"]').files.length) {
+        this.classList.remove('pulse');
+      }
+    });
+
+    // Gestion des formulaires
+    async function handleForm(event, formId, loaderId, progressId, progressTextId, statusId) {
+      event.preventDefault();
+      const form = event.target;
+      const loader = document.getElementById(loaderId);
+      const progressBar = document.getElementById(progressId);
+      const progressText = document.getElementById(progressTextId);
+      const statusMessage = document.getElementById(statusId);
+      const submitBtn = form.querySelector('button[type="submit"]');
+      
+      // Désactiver le bouton pendant le traitement
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+      
+      // Afficher le loader
+      loader.style.display = 'block';
+      statusMessage.style.display = 'block';
+      statusMessage.textContent = 'Préparation du traitement...';
+      
+      // Animation de progression simulée
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        if (progress < 90) {
+          progress += Math.random() * 10;
+          progress = Math.min(progress, 90);
+          progressBar.style.width = `${progress}%`;
+          progressText.textContent = `${Math.round(progress)}% complété`;
+          
+          // Messages de statut dynamiques
+          if (progress < 30) {
+            statusMessage.textContent = 'Analyse du fichier...';
+          } else if (progress < 60) {
+            statusMessage.textContent = 'Extraction des données...';
+          } else {
+            statusMessage.textContent = 'Finalisation du traitement...';
+          }
+        }
+      }, 500);
+      
+      try {
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formId === 'summaryForm' ? JSON.stringify({ text: document.getElementById('summaryText').value }) : formData,
+          headers: formId === 'summaryForm' ? { 'Content-Type': 'application/json' } : {}
+        });
+        
+        const data = await response.json();
+        
+        // Compléter la barre de progression
+        clearInterval(progressInterval);
+        progress = 100;
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${progress}% complété`;
+        statusMessage.textContent = 'Traitement terminé avec succès!';
+        statusMessage.style.color = 'var(--success)';
+        
+        // Afficher les résultats
+        displayResult(data);
+        
+        // Réactiver le bouton après un délai
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = formId === 'extractForm' ? '<i class="fas fa-cogs"></i> Extraire l\'audio' : 
+                             formId === 'transcribeForm' ? '<i class="fas fa-keyboard"></i> Transcrire' : 
+                             '<i class="fas fa-compress-alt"></i> Résumer';
+        }, 1000);
+        
+      } catch (error) {
+        clearInterval(progressInterval);
+        statusMessage.textContent = 'Erreur lors du traitement: ' + error.message;
+        statusMessage.style.color = 'var(--warning)';
+        progressBar.style.backgroundColor = 'var(--warning)';
+        
+        // Réactiver le bouton
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = formId === 'extractForm' ? '<i class="fas fa-cogs"></i> Extraire l\'audio' : 
+                           formId === 'transcribeForm' ? '<i class="fas fa-keyboard"></i> Transcrire' : 
+                           '<i class="fas fa-compress-alt"></i> Résumer';
+      }
+    }
+    
+    // Attacher les gestionnaires d'événements
+    document.getElementById('extractForm').addEventListener('submit', (e) => {
+      handleForm(e, 'extractForm', 'extractLoader', 'extractProgress', 'extractProgressText', 'extractStatus');
+    });
+    
+    document.getElementById('transcribeForm').addEventListener('submit', (e) => {
+      handleForm(e, 'transcribeForm', 'transcribeLoader', 'transcribeProgress', 'transcribeProgressText', 'transcribeStatus');
+    });
+    
+    document.getElementById('summaryForm').addEventListener('submit', (e) => {
+      handleForm(e, 'summaryForm', 'summaryLoader', 'summaryProgress', 'summaryProgressText', 'summaryStatus');
+    });
+    
+    // Fonction d'affichage des résultats
+    function displayResult(data) {
+      const output = document.getElementById('resultOutput');
+      let resultHTML = '';
+      
+      if (data.audio_path) {
+        resultHTML += `<div class="result-section">
+          <h3><i class="fas fa-check-circle" style="color: var(--success)"></i> Audio extrait avec succès</h3>
+          <p>${data.audio_path}</p>
+        </div>`;
+      }
+      
+      if (data.transcription) {
+        resultHTML += `<div class="result-section">
+          <h3><i class="fas fa-check-circle" style="color: var(--success)"></i> Transcription générée</h3>
+          <p>${data.transcription}</p>
+        </div>`;
+      }
+      
+      if (data.summary) {
+        resultHTML += `<div class="result-section">
+          <h3><i class="fas fa-check-circle" style="color: var(--success)"></i> Résumé généré</h3>
+          <p>${data.summary}</p>
+        </div>`;
+      }
+      
+      if (!resultHTML) {
+        resultHTML = `<div class="result-section">
+          <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning)"></i> Aucune donnée à afficher</h3>
+          <p>Le traitement n'a pas retourné de résultats.</p>
+        </div>`;
+      }
+      
+      output.innerHTML = resultHTML;
+      
+      // Ajouter une animation pour le résultat
+      output.style.animation = 'none';
+      void output.offsetWidth; // Déclenche un reflow
+      output.style.animation = 'fadeIn 0.5s ease-out';
+    }
+    
+    // Ajouter une animation CSS dynamiquement
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .result-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--gray-light);
+      }
+      
+      .result-section:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      
+      .result-section h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+      }
+      
+      .result-section p {
+        background-color: white;
+        padding: 1rem;
+        border-radius: 6px;
+        border-left: 3px solid var(--accent);
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
 </body>
 </html>

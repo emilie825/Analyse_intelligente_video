@@ -1,33 +1,68 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, jsonify, render_template
+from functions.extract import extract_audio_from_video
+from functions.transcrypt import transcribe_audio
+from functions.summarizer import summarize_text
 import os
-from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/upload', methods=['POST'])
-def upload():
-    if 'videoFile' not in request.files:
-        return redirect(request.url)
+@app.route('/extract', methods=['POST'])
+def extract():
+    file = request.files.get('file')
+    if not file or not file.filename.endswith('.mp4'):
+        return jsonify({"error": "Upload a valid .mp4 video file."}), 400
 
-    file = request.files['videoFile']
-    if file.filename == '':
-        return redirect(request.url)
+    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(filepath)
 
-    if file:
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+    audio_path = extract_audio_from_video(filepath)
+    transcription = transcribe_audio(audio_path)
+    summary = summarize_text(transcription)
 
-        # Placeholder for video analysis logic
-        summary = f"Résumé de la vidéo \"{filename}\" : Cette vidéo a été analysée avec succès. (Contenu à générer)."
+    return jsonify({
+        "audio_path": audio_path,
+        "transcription": transcription,
+        "summary": summary
+    })
 
-        return render_template('index.html', filename=filename, summary=summary)
+
+@app.route('/transcribe', methods=['POST'])
+def transcribe():
+    file = request.files.get('file')
+    if not file or not file.filename.endswith('.wav'):
+        return jsonify({"error": "Upload a valid .wav audio file."}), 400
+
+    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(filepath)
+
+    transcription = transcribe_audio(filepath)
+    summary = summarize_text(transcription)
+
+    return jsonify({
+        "transcription": transcription,
+        "summary": summary
+    })
+
+
+@app.route('/summarize', methods=['POST'])
+def summarize():
+    data = request.get_json()
+    text = data.get("text")
+    if not text:
+        return jsonify({"error": "No text provided."}), 400
+
+    summary = summarize_text(text)
+    
+    return jsonify({"summary": summary})
+
 
 if __name__ == '__main__':
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(debug=True)
