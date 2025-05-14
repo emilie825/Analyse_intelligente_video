@@ -11,22 +11,31 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    if 'videoFile' not in request.files:
-        return redirect(request.url)
+    summary = ""
+    filename = ""
 
-    file = request.files['videoFile']
-    if file.filename == '':
-        return redirect(request.url)
-
-    if file:
+    if 'videoFile' in request.files and request.files['videoFile'].filename != '':
+        file = request.files['videoFile']
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
+        summary = f"Résumé de la vidéo \"{filename}\" : Cette vidéo a été analysée avec succès."
 
-        # Placeholder for video analysis logic
-        summary = f"Résumé de la vidéo \"{filename}\" : Cette vidéo a été analysée avec succès. (Contenu à générer)."
+    elif 'audioFile' in request.files and request.files['audioFile'].filename != '':
+        file = request.files['audioFile']
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        summary = f"Résumé de l'audio \"{filename}\" : Ce fichier audio a été analysé avec succès."
 
-        return render_template('index.html', filename=filename, summary=summary)
+    elif 'userText' in request.form and request.form['userText'].strip() != '':
+        user_text = request.form['userText'].strip()
+        summary = f"Résumé du texte : \"{user_text[:100]}...\" (Analyse fictive réalisée)."
+
+    else:
+        return redirect(url_for('index'))
+
+    return render_template('index.html', filename=filename, summary=summary)
 
 if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

@@ -2,29 +2,73 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Analyseur de Vidéo IA</title>
+    <title>Analyseur IA</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='Css/style.css') }}">
     <script src="{{ url_for('static', filename='JavaScript/script.js') }}" defer></script>
 </head>
 <body>
     <div class="container">
-        <h1>🎬 Analyseur Vidéo avec Résumé Intelligent</h1>
+        <h1>🎬 Analyseur IA Intelligent</h1>
 
-        <form action="/upload" method="POST" enctype="multipart/form-data">
-            <label for="videoFile" class="upload-label">Sélectionnez une vidéo</label>
-            <input type="file" name="videoFile" id="videoFile" required>
+        <!-- Menu de sélection -->
+        <div class="nav-select">
+            <label for="modeSelect"><strong>Choisir le type d'analyse :</strong></label>
+            <div class="select-wrapper">
+                <select id="modeSelect" onchange="toggleFormBlocks()">
+                    <option value="video">🎬 Analyse Vidéo</option>
+                    <option value="audio">🎧 Analyse Audio</option>
+                    <option value="text">📝 Analyse Texte</option>
+                </select>
+                <span class="custom-arrow">▼</span>
+            </div>
+            
+        </div>
+
+        <!-- Formulaire -->
+        <form action="/upload" method="POST" enctype="multipart/form-data" id="formContainer">
+
+            <!-- Vidéo -->
+            <div class="form-block" id="videoBlock">
+                <h2>📹 Vidéo</h2>
+                <label for="videoFile" class="upload-label">Sélectionnez une vidéo</label>
+                <input type="file" name="videoFile" id="videoFile" accept="video/*">
+            </div>
+
+            <!-- Audio -->
+            <div class="form-block" id="audioBlock" style="display:none;">
+                <h2>🎧 Audio</h2>
+                <label for="audioFile" class="upload-label">Sélectionnez un fichier audio</label>
+                <input type="file" name="audioFile" id="audioFile" accept="audio/*">
+            </div>
+
+            <!-- Texte -->
+            <div class="form-block" id="textBlock" style="display:none;">
+                <h2>✍️ Texte libre</h2>
+                <label for="userText" class="upload-label">Entrez un texte</label>
+                <textarea name="userText" id="userText" rows="5" placeholder="Écrivez ici votre texte…"></textarea>
+            </div>
+
             <button type="submit">Soumettre</button>
         </form>
 
         {% if filename %}
         <div class="preview">
-            <h2>📽️ Vidéo :</h2>
+            <h2>📁 Fichier :</h2>
+            {% if filename.endswith('.mp4') %}
             <video controls width="100%">
                 <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="video/mp4">
                 Votre navigateur ne prend pas en charge la lecture de vidéos.
             </video>
+            {% elif filename.endswith('.mp3') or filename.endswith('.wav') %}
+            <audio controls>
+                <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="audio/mpeg">
+                Votre navigateur ne prend pas en charge la lecture audio.
+            </audio>
+            {% endif %}
         </div>
+        {% endif %}
 
+        {% if summary %}
         <div class="summary">
             <h2>📝 Résumé généré :</h2>
             <p>{{ summary }}</p>
