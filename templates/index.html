@@ -7,6 +7,42 @@
     <script src="{{ url_for('static', filename='JavaScript/script.js') }}" defer></script>
 </head>
 <body>
+    <!-- Barre de chargement (progression simulée) -->
+<div id="loadingBarContainer" style="display: none; width: 100%; height: 6px; background: #dfe6e9;">
+    <div id="loadingBar" style="width: 0; height: 100%; background: #3498db;"></div>
+</div>
+
+   <!-- Spinner de chargement avec texte -->
+<div id="loadingOverlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Traitement en cours…</p>
+</div>
+
+    
+    <!-- Panneau de présentation -->
+    <div class="slider-container">
+        <div class="slider">
+            <div class="slide active">
+                <h2>Transcription Automatique</h2>
+                <p>Notre application convertit automatiquement la parole en texte avec une grande précision.</p>
+            </div>
+            <div class="slide">
+                <h2>Analyse de Contenu</h2>
+                <p>Nous analysons le contenu de vos fichiers pour en extraire les informations clés.</p>
+            </div>
+            <div class="slide">
+                <h2>Résumé Intelligent</h2>
+                <p>Obtenez des résumés concis et pertinents de vos documents audio, vidéo ou texte.</p>
+            </div>
+        </div>
+        <div class="slider-controls">
+            <span class="dot active" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+            <span class="dot" onclick="currentSlide(3)"></span>
+        </div>
+    </div>
+    
+
     <div class="container">
         <h1>🎬 Analyseur IA Intelligent</h1>
 
