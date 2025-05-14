@@ -1,42 +1,64 @@
-from flask import Flask, render_template, request, redirect, url_for
-import os
+from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
+from utils import transcribe_audio, summarize_text, extract_audio_from_video
+import os
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/upload', methods=['POST'])
-def upload():
-    summary = ""
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    mode = request.form.get('mode')
+    print("Mode choisi:", mode)  # Imprimer la valeur du mode
+
     filename = ""
+    transcription = ""
+    summary = ""
 
-    if 'videoFile' in request.files and request.files['videoFile'].filename != '':
-        file = request.files['videoFile']
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        summary = f"Résumé de la vidéo \"{filename}\" : Cette vidéo a été analysée avec succès."
+    if mode == "audio":
+        file = request.files.get('audioFile')
+        if file and file.filename.endswith(('.wav', '.mp3')):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            print(f"Fichier audio reçu: {filename}, Sauvegarde à {filepath}")
+            file.save(filepath)
+            transcription = transcribe_audio(filepath)
+            summary = summarize_text(transcription)
 
-    elif 'audioFile' in request.files and request.files['audioFile'].filename != '':
-        file = request.files['audioFile']
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        summary = f"Résumé de l'audio \"{filename}\" : Ce fichier audio a été analysé avec succès."
+    elif mode == "video":
+        file = request.files.get('videoFile')
+        if file and file.filename.endswith(('.mp4', '.mov', '.avi')):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            print(f"Fichier vidéo reçu: {filename}, Sauvegarde à {filepath}")
+            file.save(filepath)
 
-    elif 'userText' in request.form and request.form['userText'].strip() != '':
-        user_text = request.form['userText'].strip()
-        summary = f"Résumé du texte : \"{user_text[:100]}...\" (Analyse fictive réalisée)."
+            # Extraction audio de la vidéo
+            audio_file_path = extract_audio_from_video(filepath)
+            transcription = transcribe_audio(audio_file_path)
+            summary = summarize_text(transcription)
 
-    else:
-        return redirect(url_for('index'))
+    elif mode == "text":
+        text = request.form.get('textInput')
+        if text:
+            transcription = text
+            summary = summarize_text(text)
 
-    return render_template('index.html', filename=filename, summary=summary)
+    return render_template(
+        'index.html',
+        filename=filename,
+        transcription=transcription,
+        summary=summary,
+        mode=mode
+    )
+
 
 if __name__ == '__main__':
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(debug=True)
