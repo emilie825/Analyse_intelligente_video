@@ -35,4 +35,5 @@ def transcribe_audio(audio_path):
         raise ValueError("Le fichier audio est vide.")
 
     result = whisper_model.transcribe(audio_path)
-    return result["text"]  # ← attention à ce point aussi !
+    return result["text"], result["segments"]  # ← on renvoie aussi les segments
+
