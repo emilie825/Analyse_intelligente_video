@@ -15,14 +15,12 @@ Une application web élégante permettant aux utilisateurs de soumettre une vid�
 
 - Frontend : HTML5, CSS3 (design responsive), JavaScript
 - Backend : Flask (Python)
-- Analyse IA (à implémenter selon ton moteur ou API)
 
 ## 👨‍💻 Créateurs
 
 Ce projet a été conçu et développé par :
 
 - **Emilienne EKASSI** 
-- **Collaborateurs éventuels** 
 - **Yann Cédric LAVRY**
 - **Djibril DIOP**
 - **Oscar HEUMOU**
