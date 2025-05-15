@@ -2,30 +2,136 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Analyseur de Vidéo IA</title>
+    <title>Analyseur IA</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='Css/style.css') }}">
     <script src="{{ url_for('static', filename='JavaScript/script.js') }}" defer></script>
 </head>
 <body>
-    <div class="container">
-        <h1>🎬 Analyseur Vidéo avec Résumé Intelligent</h1>
+    <!-- Barre de chargement (progression simulée) -->
+    <div id="loadingBarContainer" style="display: none; width: 100%; height: 6px; background: #dfe6e9;">
+        <div id="loadingBar" style="width: 0; height: 100%; background: #3498db;"></div>
+    </div>
 
-        <form action="/upload" method="POST" enctype="multipart/form-data">
-            <label for="videoFile" class="upload-label">Sélectionnez une vidéo</label>
-            <input type="file" name="videoFile" id="videoFile" required>
+    <!-- Spinner de chargement avec texte -->
+    <div id="loadingOverlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Traitement en cours…</p>
+    </div>
+
+    
+    <!-- Panneau de présentation -->
+    <div class="slider-container">
+        <div class="slider">
+            <div class="slide active">
+                <h2>Transcription Automatique</h2>
+                <p>Notre application convertit automatiquement la parole en texte avec une grande précision.</p>
+            </div>
+            <div class="slide">
+                <h2>Analyse de Contenu</h2>
+                <p>Nous analysons le contenu de vos fichiers pour en extraire les informations clés.</p>
+            </div>
+            <div class="slide">
+                <h2>Résumé Intelligent</h2>
+                <p>Obtenez des résumés concis et pertinents de vos documents audio, vidéo ou texte.</p>
+            </div>
+        </div>
+        <div class="slider-controls">
+            <span class="dot active" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+            <span class="dot" onclick="currentSlide(3)"></span>
+        </div>
+    </div>
+    
+
+    <div class="container">
+        <h1>🎬 Analyseur IA Intelligent</h1>
+
+        <!-- Menu de sélection -->
+        <div class="nav-select">
+            <label for="modeSelect"><strong>Choisir le type d'analyse :</strong></label>
+            <div class="select-wrapper">
+                <select id="modeSelect" name="mode" onchange="toggleFormBlocks()">
+                    <option value="video">🎬 Analyse Vidéo</option>
+                    <option value="audio">🎧 Analyse Audio</option>
+                    <option value="text">📝 Analyse Texte</option>
+                </select>
+                <span class="custom-arrow">▼</span>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <form action="/analyze" method="POST" enctype="multipart/form-data" id="formContainer">
+            <!-- Champ caché pour envoyer la valeur du mode -->
+            <input type="hidden" id="hiddenMode" name="mode" value="video">
+            
+            <!-- Vidéo -->
+            <div class="form-block" id="videoBlock">
+                <h2>📹 Vidéo</h2>
+                <label for="videoFile" class="upload-label">Sélectionnez une vidéo</label>
+                <input type="file" name="videoFile" id="videoFile" accept="video/*">
+            </div>
+        
+            <!-- Audio -->
+            <div class="form-block" id="audioBlock" style="display:none;">
+                <h2>🎧 Audio</h2>
+                <label for="audioFile" class="upload-label">Sélectionnez un fichier audio</label>
+                <input type="file" name="audioFile" id="audioFile" accept="audio/*">
+            </div>
+        
+            <!-- Texte -->
+            <div class="form-block" id="textBlock" style="display:none;">
+                <h2>✍️ Texte libre</h2>
+                <label for="textInput" class="upload-label">Entrez un texte</label>
+                <textarea name="textInput" id="textInput" rows="5" placeholder="Écrivez ici votre texte…"></textarea>
+            </div>
+
+            <!-- Choix de la langue -->
+            <div class="form-block" id="langBlock">
+                <h2>🌍 Langue de sortie</h2>
+                <label for="langSelect">Sélectionnez la langue :</label>
+                <select name="target_lang" id="langSelect">
+                    <option value="fr">Français</option>
+                    <option value="en">Anglais</option>
+                    <option value="es">Espagnol</option>
+                    <option value="de">Allemand</option>
+                    <option value="it">Italien</option>
+                    <!-- Ajoute d'autres langues si nécessaire -->
+                </select>
+            </div>
+
+        
             <button type="submit">Soumettre</button>
         </form>
+        
 
         {% if filename %}
         <div class="preview">
-            <h2>📽️ Vidéo :</h2>
+            <h2>📁 Fichier :</h2>
+            {% if filename.endswith('.mp4') %}
             <video controls width="100%">
                 <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="video/mp4">
                 Votre navigateur ne prend pas en charge la lecture de vidéos.
             </video>
+            {% elif filename.endswith('.mp3') or filename.endswith('.wav') %}
+            <audio controls>
+                <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="audio/mpeg">
+                Votre navigateur ne prend pas en charge la lecture audio.
+            </audio>
+            {% endif %}
         </div>
+        {% endif %}
 
+        {% if transcription %}
         <div class="summary">
+            <a href="{{ url_for('download_text', type='transcription', text=transcription_text|urlencode) }}" download="transcription.pdf">📥</a>
+            <h2>📄 Transcription :</h2>
+            <p>{{ transcription }}</p>
+        </div>
+        {% endif %}
+
+        {% if summary %}
+        <div class="summary">
+            <a href="{{ url_for('download_text', type='summary', text=summary_text|urlencode) }}" download="resume.pdf">📥</a>
             <h2>📝 Résumé généré :</h2>
             <p>{{ summary }}</p>
         </div>
