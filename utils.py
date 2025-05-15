@@ -13,6 +13,8 @@ def summarize_text(text):
     summaries = [summarizer(chunk, max_length=120, min_length=30, do_sample=False)[0]['summary_text'] for chunk in chunks]
     return " ".join(summaries)
 
+
+
 from moviepy import VideoFileClip
 
 def extract_audio_from_video(video_path):
@@ -35,4 +37,50 @@ def transcribe_audio(audio_path):
         raise ValueError("Le fichier audio est vide.")
 
     result = whisper_model.transcribe(audio_path)
-    return result["text"]  # ← attention à ce point aussi !
+    transcription = result["text"]
+    language = result.get("language", "unknown")
+    return transcription, language
+
+# calculer la durée de la vidéo 
+
+def get_video_duration(video_path):
+    clip = VideoFileClip(video_path)
+    duration_sec = int(clip.duration)
+    minutes = duration_sec // 60
+    seconds = duration_sec % 60
+    return f"{minutes:02}:{seconds:02}"
+
+from datetime import datetime
+from langcodes import Language
+
+def format_summary_as_report(summary, duration="Inconnue", lang_code="en"):
+
+
+    # Langue complète à partir du code
+    try:
+        lang_name = Language.get(lang_code).display_name("fr")
+        lang_display = lang_name.capitalize()
+    except:
+        lang_display = "Inconnue"
+
+    date_today = datetime.today().strftime("%Y-%m-%d")
+    return f"""Date : {date_today}
+Durée : {duration}
+Participants : (inconnus)
+Langue d’origine : {lang_display}
+
+
+Objectif de la réunion :
+{summary}
+
+
+Points clés abordés :
+{summary}
+
+
+Décisions prises :
+(A compléter)
+
+Actions à mener :
+(A compléter)
+"""

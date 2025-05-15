@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
-from utils import transcribe_audio, summarize_text, extract_audio_from_video
+from utils import transcribe_audio, summarize_text, extract_audio_from_video, format_summary_as_report, get_video_duration
 import os
 
 app = Flask(__name__)
@@ -29,8 +29,10 @@ def analyze():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             print(f"Fichier audio reçu: {filename}, Sauvegarde à {filepath}")
             file.save(filepath)
-            transcription = transcribe_audio(filepath)
-            summary = summarize_text(transcription)
+            transcription, lang_code = transcribe_audio(filepath)
+            summary_raw = summarize_text(transcription)
+            duration = get_video_duration(filepath)
+            summary = format_summary_as_report(summary_raw, duration=duration, lang_code=lang_code)
 
     elif mode == "video":
         file = request.files.get('videoFile')
@@ -40,10 +42,20 @@ def analyze():
             print(f"Fichier vidéo reçu: {filename}, Sauvegarde à {filepath}")
             file.save(filepath)
 
-            # Extraction audio de la vidéo
+            # Extraction audio
             audio_file_path = extract_audio_from_video(filepath)
-            transcription = transcribe_audio(audio_file_path)
-            summary = summarize_text(transcription)
+            transcription, lang_code = transcribe_audio(audio_file_path)
+            summary_raw = summarize_text(transcription)
+            duration = get_video_duration(filepath)
+            summary = format_summary_as_report(summary_raw, duration=duration, lang_code=lang_code)
+
+
+            # Récupération de la durée
+            duration = get_video_duration(filepath)
+
+            # Résumé structuré
+            summary = format_summary_as_report(summary_raw, duration=duration)
+
 
     elif mode == "text":
         text = request.form.get('textInput')
