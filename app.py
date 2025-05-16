@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, send_file
+import json
 from werkzeug.utils import secure_filename
 from utils import transcribe_audio, summarize_text, extract_audio_from_video, translate_text
 import os
@@ -28,6 +29,7 @@ def analyze():
     summary = ""
     original_transcription = ""
     original_summary = ""
+    segments = []
 
     if mode == "audio":
         file = request.files.get('audioFile')
@@ -35,7 +37,7 @@ def analyze():
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            transcription = transcribe_audio(filepath)
+            transcription, segments = transcribe_audio(filepath)
             summary = summarize_text(transcription)
 
     elif mode == "video":
@@ -45,7 +47,7 @@ def analyze():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             audio_file_path = extract_audio_from_video(filepath)
-            transcription = transcribe_audio(audio_file_path)
+            transcription, segments = transcribe_audio(filepath)
             summary = summarize_text(transcription)
 
     elif mode == "text":
@@ -70,7 +72,8 @@ def analyze():
                            mode=mode,
                            target_lang=target_lang,
                            transcription_text=transcription,
-                           summary_text=summary)
+                           summary_text=summary,
+                           segments=json.dumps(segments))
 
 @app.route("/download/<type>")
 def download_text(type):
