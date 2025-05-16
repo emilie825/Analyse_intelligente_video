@@ -46,7 +46,6 @@ stanza
 sympy
 tiktoken
 tokenizers
-torch
 tqdm
 transformers
 typing_extensions
