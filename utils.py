@@ -75,7 +75,7 @@ def transcribe_audio(audio_path):
     if os.path.getsize(audio_path) == 0:
         raise ValueError("Fichier audio vide.")
     result = whisper_model.transcribe(audio_path)
-    return result["text"]
+    return result["text"], result["segments"]
 
 # Installation automatique à l'import
 install_local_argos_models()

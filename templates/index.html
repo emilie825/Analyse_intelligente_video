@@ -99,7 +99,6 @@
                 </select>
             </div>
 
-        
             <button type="submit">Soumettre</button>
         </form>
         
@@ -112,23 +111,22 @@
                 <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="video/mp4">
                 Votre navigateur ne prend pas en charge la lecture de vidéos.
             </video>
+            <div id="subtitles">
+                <h2>📄 Transcription :</h2>
+            </div>
             {% elif filename.endswith('.mp3') or filename.endswith('.wav') %}
             <audio controls>
                 <source src="{{ url_for('static', filename='uploads/' + filename) }}" type="audio/mpeg">
                 Votre navigateur ne prend pas en charge la lecture audio.
             </audio>
+            <div id="subtitles">
+                <h2>📄 Transcription :</h2>
+            </div>
             {% endif %}
         </div>
         {% endif %}
 
-        {% if transcription %}
-        <div class="summary">
-            <a href="{{ url_for('download_text', type='transcription', text=transcription_text|urlencode) }}" download="transcription.pdf">📥</a>
-            <h2>📄 Transcription :</h2>
-            <p>{{ transcription }}</p>
-        </div>
-        {% endif %}
-
+    
         {% if summary %}
         <div class="summary">
             <a href="{{ url_for('download_text', type='summary', text=summary_text|urlencode) }}" download="resume.pdf">📥</a>
@@ -137,5 +135,42 @@
         </div>
         {% endif %}
     </div>
+
+{% if segments %}
+    <script>
+    const subtitles = {{ segments | safe }};
+    const video = document.getElementById("video");
+    const container = document.getElementById("subtitles");
+
+    // Afficher les sous-titres
+    subtitles.forEach((sub, i) => {
+        const p = document.createElement("p");
+        p.classList.add("subtitle");
+        p.setAttribute("data-start", sub.start);
+        p.setAttribute("data-end", sub.end);
+        p.innerText = sub.text;
+        container.appendChild(p);
+    });
+
+    // Mettre à jour l'affichage selon currentTime
+    video.addEventListener("timeupdate", () => {
+        const current = video.currentTime;
+        document.querySelectorAll(".subtitle").forEach(el => {
+            const start = parseFloat(el.getAttribute("data-start"));
+            const end = parseFloat(el.getAttribute("data-end"));
+            if (current >= start && current <= end) {
+                el.classList.add("active");
+            } else {
+                el.classList.remove("active");
+            }
+        });
+    });
+    </script>
+    <style>
+        #subtitles { margin-top: 20px; }
+        .subtitle { margin: 5px 0; font-size: 1rem; }
+        .active { background: yellow; font-weight: bold; }
+    </style>
+    {% endif %}
 </body>
 </html>
