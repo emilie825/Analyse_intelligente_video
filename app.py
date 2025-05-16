@@ -1,5 +1,4 @@
 from flask import Flask, request, render_template, send_file
-import json
 from werkzeug.utils import secure_filename
 from utils import transcribe_audio, summarize_text, extract_audio_from_video, translate_text
 import os
@@ -33,7 +32,7 @@ def analyze():
 
     if mode == "audio":
         file = request.files.get('audioFile')
-        if file and file.filename.endswith(('.wav','.mp3')):
+        if file and file.filename.endswith(('.wav', '.mp3')):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
@@ -42,12 +41,12 @@ def analyze():
 
     elif mode == "video":
         file = request.files.get('videoFile')
-        if file and file.filename.endswith(('.mp4','.mov','.avi')):
+        if file and file.filename.endswith(('.mp4', '.mov', '.avi')):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             audio_file_path = extract_audio_from_video(filepath)
-            transcription, segments = transcribe_audio(filepath)
+            transcription, segments = transcribe_audio(audio_file_path)
             summary = summarize_text(transcription)
 
     elif mode == "text":
@@ -59,21 +58,28 @@ def analyze():
     original_transcription = transcription
     original_summary = summary
 
-    
     print(f"[DEBUG] Traduction en cours vers : {target_lang}")
-    transcription = translate_text(original_transcription, target_lang)
-    summary = translate_text(original_summary, target_lang)
+
+    # Traduction globale
+    translated_transcription = translate_text(original_transcription, target_lang)
+    translated_summary = translate_text(original_summary, target_lang)
+
+    # Traduction ligne par ligne des segments
+    for seg in segments:
+        seg['translation'] = translate_text(seg['text'], target_lang)
+
     print(f"[DEBUG] Traduction terminée.")
 
     return render_template('index.html',
                            filename=filename,
-                           transcription=transcription,
-                           summary=summary,
+                           transcription=translated_transcription,
+                           summary=translated_summary,
                            mode=mode,
                            target_lang=target_lang,
-                           transcription_text=transcription,
-                           summary_text=summary,
-                           segments=json.dumps(segments))
+                           transcription_text=translated_transcription,
+                           summary_text=translated_summary,
+                           segments=segments)
+
 
 @app.route("/download/<type>")
 def download_text(type):

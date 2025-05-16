@@ -70,3 +70,26 @@ document.querySelector('form').addEventListener('submit', function () {
     console.log("Langue sélectionnée :", selectedLang);
 });
 
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const player = document.getElementById("mediaPlayer");
+    const segments = document.querySelectorAll("#transcriptionSync p");
+
+    if (player && segments.length) {
+        player.addEventListener("timeupdate", () => {
+            const current = player.currentTime;
+
+            segments.forEach(p => {
+                const start = parseFloat(p.dataset.start);
+                const end = parseFloat(p.dataset.end);
+
+                if (current >= start && current <= end) {
+                    p.classList.add("highlight");
+                } else {
+                    p.classList.remove("highlight");
+                }
+            });
+        });
+    }
+});

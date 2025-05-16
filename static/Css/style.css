@@ -262,3 +262,23 @@ button:hover {
 .download-btn:hover {
     background: #2980b9;
 }
+
+#transcriptionSync p {
+    transition: background 0.3s;
+    padding: 5px 10px;
+    margin-bottom: 5px;
+    border-radius: 6px;
+}
+
+#transcriptionSync p.highlight {
+    background-color: #dff9fb;
+    font-weight: bold;
+}
+
+#transcriptionSync p em {
+    font-style: normal;
+    font-size: 0.95em;
+    color: #666;
+    display: block;
+    margin-top: 4px;
+}

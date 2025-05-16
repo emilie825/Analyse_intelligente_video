@@ -26,33 +26,39 @@ def install_local_argos_models():
                 print(f"[✘] Erreur avec {file} : {e}")
 
 def translate_text(text, target_lang):
-    lang_map = {
-        "en": "en",
-        "fr": "fr",
-        "es": "es",
-        "de": "de",
-        "it": "it"
-    }
-
-    if target_lang not in lang_map:
-        return text
-
+    # Détecter la langue source (ici, simple : anglais ou français)
     installed_languages = translate.get_installed_languages()
+    target_lang_obj = next((lang for lang in installed_languages if lang.code == target_lang), None)
 
-    # On suppose ici que la langue source est l'anglais
-    source_lang = next((lang for lang in installed_languages if lang.code == "en"), None)
-    target_lang_obj = next((lang for lang in installed_languages if lang.code == lang_map[target_lang]), None)
-
-    if source_lang and target_lang_obj:
-        try:
-            translation = source_lang.get_translation(target_lang_obj)
-            return translation.translate(text)
-        except Exception as e:
-            print(f"[✘] Erreur de traduction : {e}")
-            return text
-    else:
-        print("[✘] Langues non installées ou non disponibles.")
+    if not target_lang_obj:
         return text
+
+    # Cas simple : on a le modèle en direct (ex: en → fr)
+    for lang in installed_languages:
+        try:
+            translation = lang.get_translation(target_lang_obj)
+            return translation.translate(text)
+        except:
+            continue
+
+    # Cas indirect : français vers autre langue via anglais
+    source_fr = next((lang for lang in installed_languages if lang.code == "fr"), None)
+    target_en = next((lang for lang in installed_languages if lang.code == "en"), None)
+
+    if source_fr and target_en and target_lang != "en":
+        try:
+            # Étape 1 : fr → en
+            fr_en = source_fr.get_translation(target_en)
+            english_text = fr_en.translate(text)
+
+            # Étape 2 : en → target
+            en_target = target_en.get_translation(target_lang_obj)
+            return en_target.translate(english_text)
+        except:
+            pass
+
+    return text
+
 
 def summarize_text(text):
     if len(text) < 50:
@@ -74,8 +80,10 @@ def transcribe_audio(audio_path):
         raise FileNotFoundError(f"Fichier audio non trouvé : {audio_path}")
     if os.path.getsize(audio_path) == 0:
         raise ValueError("Fichier audio vide.")
-    result = whisper_model.transcribe(audio_path)
-    return result["text"], result["segments"]
+    
+    result = whisper_model.transcribe(audio_path, verbose=False)
+    return result["text"], result["segments"]  # ⬅️ retourne aussi les segments horodatés
+
 
 # Installation automatique à l'import
 install_local_argos_models()
